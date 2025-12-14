@@ -21,7 +21,7 @@ public class limelight implements Subsystem {
     private Limelight3A limelight3A;
     public static limelight INSTANCE = new limelight();
     private limelight(){}
-    public static int obeliskId = 0;
+    public static int obeliskId = 21;
 
 
     public final Command scanObelisk = new InstantCommand(() -> {

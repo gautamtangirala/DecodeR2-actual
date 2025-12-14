@@ -7,6 +7,8 @@ import org.firstinspires.ftc.teamcode.subsystems.indivdual.limelight;
 
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.conditionals.SwitchCommand;
+import dev.nextftc.core.commands.delays.Delay;
+import dev.nextftc.core.commands.groups.ParallelGroup;
 import dev.nextftc.core.commands.groups.SequentialGroup;
 import dev.nextftc.core.commands.utility.NullCommand;
 import dev.nextftc.core.subsystems.SubsystemGroup;
@@ -24,10 +26,11 @@ public class robot extends SubsystemGroup {
     }
 
     public final Command prepCarouselToMove(){
-     /*
-     close all gates
-      */
-        return new NullCommand();
+        return flywheel.INSTANCE.resetKicker;
+    }
+
+    public final Command rotateCarousel(){
+        return carousel.INSTANCE.nextPosition();
     }
 
     public final Command greenToFlywheel(){
@@ -40,6 +43,8 @@ public class robot extends SubsystemGroup {
         else
             return ID1Flywheel
         */
+
+
         return new NullCommand();
     }
 
@@ -53,6 +58,7 @@ public class robot extends SubsystemGroup {
         else
             return ID1Flywheel
         */
+
         return new NullCommand();
     }
 
@@ -97,17 +103,28 @@ public class robot extends SubsystemGroup {
         open carousel gate
 
         kick ball
-
-
          */
-        return new NullCommand();
+        return flywheel.INSTANCE.kickBallIn;
     }
+
+    public final Command openStopperStartFlywheel(){
+        return new ParallelGroup(flywheel.INSTANCE.start, flywheel.INSTANCE.openStopper);
+    }
+
+    public final Command closeStopperStopFlywheel(){
+        return new ParallelGroup(flywheel.INSTANCE.stop, flywheel.INSTANCE.closeStopper);
+    }
+
+
 
     public final Command shootPurple(){
         return new SequentialGroup(
                 prepCarouselToMove(),
                 purpleToFlywheel(),
-                kickToFlywheel()
+                kickToFlywheel(),
+                new Delay(0.25),
+                prepCarouselToMove(),
+                new Delay(1)
         );
     }
 
@@ -115,7 +132,8 @@ public class robot extends SubsystemGroup {
         return new SequentialGroup(
                 prepCarouselToMove(),
                 greenToFlywheel(),
-                kickToFlywheel()
+                kickToFlywheel(),
+                new Delay(0.2)
         );
     }
 
@@ -123,7 +141,9 @@ public class robot extends SubsystemGroup {
     public final Command GPPmotif(){
         return new SequentialGroup(
                 shootGreen(),
+                new Delay(0.1),
                 shootPurple(),
+                new Delay(0.1),
                 shootPurple()
         );
     }
@@ -131,7 +151,9 @@ public class robot extends SubsystemGroup {
     public final Command PGPmotif(){
         return new SequentialGroup(
                 shootPurple(),
+                new Delay(0.1),
                 shootGreen(),
+                new Delay(0.1),
                 shootPurple()
         );
     }
@@ -144,12 +166,17 @@ public class robot extends SubsystemGroup {
         );
     }
 
-    public final Command scoreMotif(){
-        return new SwitchCommand<>(() -> limelight.obeliskId)
-                .withCase(21, GPPmotif())
-                .withCase(22, PGPmotif())
-                .withCase(23, PPGmotif())
-                .withCase(0,  PPGmotif());
+    public final Command scoreMotif() {
+        switch (limelight.obeliskId) {
+            case 21:
+                return GPPmotif();
+            case 22:
+                return PGPmotif();
+            case 23:
+                return PPGmotif();
+            default:
+                return PPGmotif();  // or whatever default you want
+        }
     }
 
 

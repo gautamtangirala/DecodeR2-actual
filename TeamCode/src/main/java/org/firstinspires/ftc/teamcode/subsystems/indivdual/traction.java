@@ -16,13 +16,17 @@ public class traction implements Subsystem {
     private ServoEx rightTractionWheel = new ServoEx("rightTractionWheel");
     private ServoEx leftTractionWheel = new ServoEx("leftTractionWheel");
 
-    private double rightTractionUp = 0.25;
-    private double rightTractionDown = 0.15;
+    private double rightTractionUp = 0.61;
+    private double rightTractionDown = 0.64;
+    private double rightTractionTip = 0.71;
 
-    private double leftTractionUp = 0.8;
+    private double leftTractionUp = 0.96;
     private double leftTractionDown = 1;
+    private double leftTractionTip = 1;
 
     public final Command deploy = new SetPositions(rightTractionWheel.to(rightTractionDown), leftTractionWheel.to(leftTractionDown)).requires(this);
+
+    public final Command tip = new SetPositions(rightTractionWheel.to(rightTractionTip), leftTractionWheel.to(leftTractionTip)).requires(this);
 
     public final Command retract = new SetPositions(rightTractionWheel.to(rightTractionUp), leftTractionWheel.to(leftTractionUp)).requires(this);
 

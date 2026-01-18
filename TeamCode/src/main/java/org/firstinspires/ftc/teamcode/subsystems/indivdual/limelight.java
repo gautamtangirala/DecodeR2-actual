@@ -18,25 +18,28 @@ import dev.nextftc.core.subsystems.Subsystem;
 import dev.nextftc.ftc.ActiveOpMode;
 
 public class limelight implements Subsystem {
-    private Limelight3A limelight3A;
+    private static Limelight3A limelight3A;
     public static limelight INSTANCE = new limelight();
-    private limelight(){}
+
+    private limelight() {
+    }
+
     public static int obeliskId = 21;
 
 
-    public final Command scanObelisk = new InstantCommand(() -> {
-         List<LLResultTypes.FiducialResult> results = limelight3A.getLatestResult().getFiducialResults();
-        obeliskId = (results != null && !results.isEmpty())  ? results.get(0).getFiducialId() : 21;
-    });
+    public final static void scanObelisk() {
+        List<LLResultTypes.FiducialResult> results = limelight3A.getLatestResult().getFiducialResults();
+        obeliskId = (results != null && !results.isEmpty()) ? results.get(0).getFiducialId() : 0;
+    }
 
-    public final Command stopLimelight = new InstantCommand(() ->{
-       limelight3A.stop();
-    });
+    public static final void stopLimelight(){
+        limelight3A.stop();
+    }
 
-    public final Command startLimelight = new InstantCommand(() -> {
+    public static final void startLimelight() {
         limelight3A.pipelineSwitch(0);
         limelight3A.start();
-    });
+    }
 
     @Override
     public void initialize(){

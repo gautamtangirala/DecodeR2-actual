@@ -6,6 +6,7 @@ import static org.firstinspires.ftc.teamcode.fieldConstants.robotPose;
 import static org.firstinspires.ftc.teamcode.opmode.tuners.headingLockTuner.headingLockD;
 import static org.firstinspires.ftc.teamcode.opmode.tuners.headingLockTuner.headingLockI;
 import static org.firstinspires.ftc.teamcode.opmode.tuners.headingLockTuner.headingLockP;
+import static org.firstinspires.ftc.teamcode.subsystems.robot.shooting;
 import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
 import com.bylazar.configurables.annotations.Configurable;
@@ -14,6 +15,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.indivdual.flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.indivdual.intake;
+import org.firstinspires.ftc.teamcode.subsystems.indivdual.kicker;
+import org.firstinspires.ftc.teamcode.subsystems.indivdual.limelight;
+import org.firstinspires.ftc.teamcode.subsystems.indivdual.spindexer;
 import org.firstinspires.ftc.teamcode.subsystems.indivdual.traction;
 import org.firstinspires.ftc.teamcode.subsystems.robot;
 
@@ -38,7 +42,7 @@ public class fullTeleRed extends NextFTCOpMode {
     public fullTeleRed(){
         addComponents(
                 new PedroComponent(Constants::createFollower),
-                new SubsystemComponent(robot.INSTANCE, traction.INSTANCE),
+                new SubsystemComponent(robot.INSTANCE),
                 BulkReadComponent.INSTANCE,
                 BindingsComponent.INSTANCE
         );
@@ -60,6 +64,7 @@ public class fullTeleRed extends NextFTCOpMode {
         follower().setStartingPose(robotPose);
         Gamepads.gamepad1().rightStickX();
         Gamepads.gamepad1().leftStickX();
+        traction.INSTANCE.retract.schedule();
         follower().update();
     }
 
@@ -67,7 +72,8 @@ public class fullTeleRed extends NextFTCOpMode {
     public void onStartButtonPressed() {
         //holonomic drive with heading lock when right bumper held
         Gamepads.gamepad1().rightTrigger().greaterThan(0).whenTrue(() -> headingLockEnabled = true).whenFalse(() -> headingLockEnabled = false);
-        Gamepads.gamepad1().leftTrigger().greaterThan(0).whenTrue(() -> {tractionEnabled = true; traction.INSTANCE.deploy.schedule();}).whenFalse(() -> {tractionEnabled = false; traction.INSTANCE.retract.schedule();});
+        Gamepads.gamepad1().leftTrigger().greaterThan(0).whenBecomesTrue(() -> {tractionEnabled = true; traction.INSTANCE.deploy.schedule();}).whenBecomesFalse(() -> {tractionEnabled = false; traction.INSTANCE.retract.schedule();});
+        Gamepads.gamepad1().y().toggleOnBecomesTrue().whenBecomesTrue(() -> {tractionEnabled = true; traction.INSTANCE.tip.schedule();}).whenBecomesFalse(() -> {tractionEnabled = false; traction.INSTANCE.retract.schedule();});
         DriverControlledCommand driverControlled = new PedroDriverControlled(
                 Gamepads.gamepad1().leftStickY().negate(),
                 () -> tractionEnabled ? 0 : -Gamepads.gamepad1().leftStickX().get(),
@@ -79,21 +85,22 @@ public class fullTeleRed extends NextFTCOpMode {
 
 
         //intake commands
-        Gamepads.gamepad2().a().whenTrue(intake.INSTANCE.in).whenFalse(intake.INSTANCE.stop);
-        Gamepads.gamepad2().y().whenTrue(intake.INSTANCE.out);
+        Gamepads.gamepad2().leftTrigger().greaterThan(0).whenBecomesTrue(robot.INSTANCE.startIntaking).whenBecomesFalse(robot.INSTANCE.stopIntaking);
+        Gamepads.gamepad2().rightTrigger().greaterThan(0).whenBecomesTrue(intake.INSTANCE.out).whenBecomesFalse(intake.INSTANCE.stop);
 
 
-        //kicker
-        Gamepads.gamepad2().x().whenBecomesTrue(robot.INSTANCE.kickToFlywheel()).whenBecomesFalse(robot.INSTANCE.prepCarouselToMove());
+        //shoot all
+        Gamepads.gamepad2().dpadDown().and(() -> !shooting).whenBecomesTrue(() -> robot.INSTANCE.shootAll().schedule());
+        Gamepads.gamepad2().x().toggleOnBecomesTrue().whenBecomesTrue(kicker.INSTANCE.kickerUp).whenBecomesFalse(kicker.INSTANCE.kickerDown);
 
-        //carousel
-  //      Gamepads.gamepad2().leftBumper().whenBecomesTrue(carousel.INSTANCE.ID1Intake);
-  //      Gamepads.gamepad2().rightBumper().whenBecomesTrue(carousel.INSTANCE.ID2Intake);
-  //      Gamepads.gamepad2().dpadLeft().whenBecomesTrue(carousel.INSTANCE.ID3Intake);
+        //sorting commands
+        Gamepads.gamepad2().rightBumper().whenBecomesTrue(() -> spindexer.nextSlot());
+        Gamepads.gamepad2().b().whenBecomesTrue(() -> robot.INSTANCE.sort(limelight.obeliskId));
 
 
         //flywheel
-        Gamepads.gamepad2().dpadUp().toggleOnBecomesTrue().whenBecomesTrue(robot.INSTANCE.openStopperStartFlywheel()).whenBecomesFalse(robot.INSTANCE.closeStopperStopFlywheel());
+        Gamepads.gamepad2().dpadLeft().toggleOnBecomesTrue().whenBecomesTrue(flywheel.INSTANCE.spinAtSpeed(1400)).whenBecomesFalse(flywheel.INSTANCE.stop);
+        Gamepads.gamepad2().dpadRight().toggleOnBecomesTrue().whenBecomesTrue(flywheel.INSTANCE.spinAtSpeed(1100)).whenBecomesFalse(flywheel.INSTANCE.stop);
 
     }
 
@@ -108,6 +115,7 @@ public class fullTeleRed extends NextFTCOpMode {
         telemetry.addData("goal:", goal.component1());
         telemetry.update();
         robotPose = follower().getPose();
+
     }
 
     @Override
@@ -116,5 +124,6 @@ public class fullTeleRed extends NextFTCOpMode {
         flywheel.INSTANCE.stop.schedule();
         robot.INSTANCE.prepCarouselToMove().schedule();
         BindingManager.reset();
+
     }
 }

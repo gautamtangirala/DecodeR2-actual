@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.subsystems.indivdual.flywheel;
-import org.firstinspires.ftc.teamcode.subsystems.indivdual.spindexer;
+import org.firstinspires.ftc.teamcode.subsystems.indivdual.posSpindexer;
 import org.firstinspires.ftc.teamcode.subsystems.robot;
 
 import dev.nextftc.bindings.BindingManager;
@@ -23,7 +23,7 @@ import dev.nextftc.ftc.components.BulkReadComponent;
 
 
 @Configurable
-@TeleOp(name = "Subsystems Tuner", group = "Tuners")
+@TeleOp(name = "Subsystems Tester", group = "Tuners")
 public class allSubsystemsTuner extends NextFTCOpMode {
 
     public allSubsystemsTuner(){
@@ -43,13 +43,11 @@ public class allSubsystemsTuner extends NextFTCOpMode {
 
     @Override
     public void onStartButtonPressed() {
-        //Gamepads.gamepad1().a().whenTrue(() -> robot.INSTANCE.intaking.update()).whenBecomesTrue(() -> robot.INSTANCE.intaking.start()).whenBecomesFalse(() -> robot.INSTANCE.intaking.stop(true));
         Gamepads.gamepad1().a().whenBecomesTrue(robot.INSTANCE.startIntaking).whenBecomesFalse(robot.INSTANCE.stopIntaking);
-       // Gamepads.gamepad1().b().whenBecomesTrue(intake.INSTANCE.out).whenBecomesFalse(intake.INSTANCE.stop);
-        Gamepads.gamepad1().y().whenBecomesTrue(() -> spindexer.nextSlot());
-        Gamepads.gamepad1().x().and(() -> !robot.shooting).whenBecomesTrue(robot.INSTANCE.shootAll());
+        Gamepads.gamepad1().y().whenBecomesTrue(() -> posSpindexer.INSTANCE.nextSlot().schedule());
+        Gamepads.gamepad1().x().and(() -> !robot.shooting).whenBecomesTrue(() -> robot.INSTANCE.shootAll().schedule());
         Gamepads.gamepad1().dpadUp().toggleOnBecomesTrue().whenBecomesTrue(flywheel.INSTANCE.startFar).whenBecomesFalse(flywheel.INSTANCE.stop);
-        Gamepads.gamepad1().b().whenBecomesTrue(robot.INSTANCE.sort(21));
+        Gamepads.gamepad1().b().whenBecomesTrue(() -> robot.INSTANCE.sort(21).schedule());
     }
 
 

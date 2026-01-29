@@ -1,14 +1,11 @@
 package org.firstinspires.ftc.teamcode.subsystems.indivdual;
 
-import static dev.nextftc.bindings.Bindings.button;
-
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-import dev.nextftc.bindings.Button;
 import dev.nextftc.core.subsystems.Subsystem;
 import dev.nextftc.ftc.ActiveOpMode;
 
@@ -32,10 +29,22 @@ public class sensors implements Subsystem {
         EMPTY
     }
 
+
+    /*
+    carouselSlots[0] is Intake
+    carouselSlots[1] is Left Back
+    carouselSlots[2] is Right Back
+
+    The balls will shoot on in order 2,0,1
+
+    When rotating, left back goes to intake, right back goes to left back, and intake goes to right back
+
+     */
+
     public static ballColor[] carouselSlots = {
             ballColor.EMPTY,
             ballColor.EMPTY,
-            ballColor.EMPTY
+            ballColor.EMPTY,
     };
 
 
@@ -48,9 +57,9 @@ public class sensors implements Subsystem {
 
     @Override
     public void periodic(){
-        ActiveOpMode.telemetry().addData("1: ", carouselSlots[0]);
-        ActiveOpMode.telemetry().addData("2: ", carouselSlots[1]);
-        ActiveOpMode.telemetry().addData("3: ", carouselSlots[2]);
+//        ActiveOpMode.telemetry().addData("Intake: ", ballColor.EMPTY);
+//        ActiveOpMode.telemetry().addData("Left Back: ", ballColor.EMPTY);
+//        ActiveOpMode.telemetry().addData("Right Back: ", ballColor.EMPTY);
     }
 
     private static ballColor hueToBallColor(double hue) {
@@ -73,6 +82,29 @@ public class sensors implements Subsystem {
         return hueToBallColor(0);
     }
 
+    public static ballColor intakeSensorReading = ballColor.EMPTY;
+    public static boolean intakeBeamBroken = false;
+
+    public static final void updateIntake(){
+        intakeSensorReading = getBallColor(intakeColorSensor);
+        intakeBeamBroken = intakeSensorReading != ballColor.EMPTY;
+    }
+
+
+    public static int getGreenCount() {
+        int greenCount = 0;
+        for (ballColor color : carouselSlots) {
+            if (color == ballColor.GREEN) {
+                greenCount++;
+            }
+        }
+
+        return greenCount;
+    }
+
+
+
+
     private static ballColor getBallColorPG(RevColorSensorV3 sensor){
         if (sensor.getDistance(DistanceUnit.CM) < hasBallThreshold) {
             return hueToBallColor(JavaUtil.colorToHue(sensor.getNormalizedColors().toColor()));
@@ -83,43 +115,16 @@ public class sensors implements Subsystem {
     public static final void updateAll(){
         carouselSlots[0] = getBallColorPG(intakeColorSensor);
         carouselSlots[1] = getBallColorPG(leftBackColorSensor);
-
-        carouselSlots[2] = ballColor.EMPTY;
-        int[] ballCounts = getBallCounts();
-        int greenCount = ballCounts[0];
-        int purpleCount = ballCounts[1];
+        int greenCount = getGreenCount();
 
         if(greenCount == 0){
-            carouselSlots[1] = ballColor.GREEN;
+            carouselSlots[2] = ballColor.GREEN;
         }
         else{
-            carouselSlots[1] = ballColor.PURPLE;
+            carouselSlots[2] = ballColor.PURPLE;
         }
     };
 
 
-    public static ballColor intakeSensorReading = ballColor.EMPTY;
-    public static boolean intakeBeamBroken = false;
-
-    public static final void updateIntake(){
-        intakeSensorReading = getBallColor(intakeColorSensor);
-        intakeBeamBroken = intakeSensorReading != ballColor.EMPTY;
-    }
-
-
-    public static int[] getBallCounts() {
-        int greenCount = 0;
-        int purpleCount = 0;
-
-        for (ballColor color : carouselSlots) {
-            if (color == ballColor.GREEN) {
-                greenCount++;
-            } else if (color == ballColor.PURPLE) {
-                purpleCount++;
-            }
-        }
-
-        return new int[]{greenCount, purpleCount};
-    }
 }
 

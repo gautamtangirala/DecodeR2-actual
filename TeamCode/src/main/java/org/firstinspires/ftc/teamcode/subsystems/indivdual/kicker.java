@@ -16,8 +16,9 @@ public class kicker implements Subsystem {
     //kicker
     private ServoEx kickerServo = new ServoEx("kicker");
 
-    private final double rampUpPos = 0.52;
-    private final double rampDownPos = 0.45;
+    private final double rampUpPos = 0.76
+            ;
+    private final double rampDownPos = 0.66;
     public final Command kickerUp = new SetPosition(kickerServo, rampUpPos);
     public final Command kickerDown = new SetPosition(kickerServo, rampDownPos);
     public final Command setKickerPos(double pos){
@@ -27,9 +28,14 @@ public class kicker implements Subsystem {
 
     @Override
     public void initialize(){
+        kickerDown.schedule();
     }
 
     @Override
     public void periodic(){
+
+//        ActiveOpMode.telemetry().addLine("Kicker");
+//        ActiveOpMode.telemetry().addData("kicker position", kickerServo.getPosition());
+//        ActiveOpMode.telemetry().addLine();
     }
 }

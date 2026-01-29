@@ -16,31 +16,20 @@ public class flywheel implements Subsystem {
     public static final flywheel INSTANCE = new flywheel();
     private flywheel() {}
 
+    private MotorGroup flywheelMotor = new MotorGroup(new MotorEx("flywheel1"), new MotorEx("flywheel2").reversed());
 
-
-
-    //flywheel
-    private MotorGroup flywheelMotor = new MotorGroup(new MotorEx("flywheel1"), new MotorEx("flywheel2"));
-
-    public ControlSystem flywheelControl = ControlSystem.builder()
-            .velPid(0.00375, 0, 0)
+    public static ControlSystem flywheelControl = ControlSystem.builder()
+            .velPid(0.0045, 0, 0)
             .feedforward(new BasicFeedforward(0.00048, 0.0004, 0.000145))
             .build();
 
+    public final Command startFar = new InstantCommand(() -> flywheelControl.setGoal(new KineticState(0,1350))).requires(flywheelMotor);
 
- /*   public final Command shootBall(double x, double y, double angle){
-        double ballVelocity = 0;
-        return new RunToVelocity(controlSystem, ballVelocity, -1).requires(this);
-    } */
-
-    //public final Command start = new SetPower(flywheelMotor, 1).requires(flywheelMotor);
-    public final Command startFar = new InstantCommand(() -> flywheelControl.setGoal(new KineticState(0,1300))).requires(flywheelMotor);
-
-    public final Command startClose = new InstantCommand(() -> flywheelControl.setGoal(new KineticState(0,1100))).requires(flywheelMotor);
+    public final Command startClose = new InstantCommand(() -> flywheelControl.setGoal(new KineticState(0,1400))).requires(flywheelMotor);
 
 
-    public final Command spinAtSpeed(double goal){
-        return new InstantCommand(() -> flywheelControl.setGoal(new KineticState(0, goal))).requires(flywheelMotor);
+    public static final void spinAtSpeed(double goal){
+        flywheelControl.setGoal(new KineticState(0, goal));
     }
 
     //public final Command stop = new SetPower(flywheelMotor, 0).requires(flywheelMotor);
@@ -52,14 +41,22 @@ public class flywheel implements Subsystem {
 
     @Override
     public void initialize(){
-        stop.invoke();
+        stop.schedule();
     }
 
     @Override
     public void periodic(){
-        flywheelMotor.setPower(flywheelControl.calculate(new KineticState(flywheelMotor.getCurrentPosition(), flywheelMotor.getVelocity())));
+        if(flywheelControl.getGoal().getVelocity() == 0){
+            flywheelMotor.setPower(0);
+        }
+        else {
+            flywheelMotor.setPower(flywheelControl.calculate(new KineticState(flywheelMotor.getCurrentPosition(), flywheelMotor.getVelocity())));
+        }
+        ActiveOpMode.telemetry().addLine("Flywheel");
         ActiveOpMode.telemetry().addData("flywheel velocity: ", flywheelMotor.getVelocity());
-        ActiveOpMode.telemetry().addData("flywheel target: ", flywheelControl.getGoal());
-        ActiveOpMode.telemetry().addData("flywheel calculated power: ",flywheelControl.calculate(new KineticState(flywheelMotor.getCurrentPosition(), flywheelMotor.getVelocity())));
+        ActiveOpMode.telemetry().addData("flywheel target: ", flywheelControl.getGoal().getVelocity());
+//        ActiveOpMode.telemetry().addData("flywheel calculated power: ",flywheelControl.calculate(new KineticState(flywheelMotor.getCurrentPosition(), flywheelMotor.getVelocity())));
+        ActiveOpMode.telemetry().addLine();
+
     }
 }

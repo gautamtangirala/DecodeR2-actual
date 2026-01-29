@@ -4,6 +4,7 @@ package org.firstinspires.ftc.teamcode.opmode.auto.redAuto;
 import static com.pedropathing.paths.HeadingInterpolator.lazy;
 import static com.pedropathing.paths.HeadingInterpolator.linear;
 import static org.firstinspires.ftc.teamcode.fieldConstants.blueFarScorePose;
+import static org.firstinspires.ftc.teamcode.fieldConstants.redCloseScorePose;
 import static org.firstinspires.ftc.teamcode.fieldConstants.robotPose;
 import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
@@ -43,7 +44,7 @@ public class redClose extends NextFTCOpMode {
 
     private final Pose startPose = new Pose(30, 128, Math.toRadians(180)).mirror();
     private final Pose scanObeliskPose = new Pose(60, 100, Math.toRadians(70)).mirror();
-    private final Pose scorePose = blueFarScorePose.mirror();
+    private final Pose scorePose = redCloseScorePose;
 
     private final double prepPickupBallsX = 44;
     private final Pose prepPickup1Pose = new Pose(prepPickupBallsX, 84, Math.toRadians(180)).mirror();

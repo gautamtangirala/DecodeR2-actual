@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmode.tele;
 
 
 import static org.firstinspires.ftc.teamcode.fieldConstants.blueGoalPose;
+import static org.firstinspires.ftc.teamcode.fieldConstants.goalDist;
 import static org.firstinspires.ftc.teamcode.fieldConstants.robotPose;
 import static org.firstinspires.ftc.teamcode.opmode.tuners.headingLockTuner.headingLockD;
 import static org.firstinspires.ftc.teamcode.opmode.tuners.headingLockTuner.headingLockI;
@@ -10,6 +11,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.robot.shooting;
 import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -17,7 +19,7 @@ import org.firstinspires.ftc.teamcode.subsystems.indivdual.flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.indivdual.intake;
 import org.firstinspires.ftc.teamcode.subsystems.indivdual.kicker;
 import org.firstinspires.ftc.teamcode.subsystems.indivdual.limelight;
-import org.firstinspires.ftc.teamcode.subsystems.indivdual.spindexer;
+import org.firstinspires.ftc.teamcode.subsystems.indivdual.posSpindexer;
 import org.firstinspires.ftc.teamcode.subsystems.indivdual.traction;
 import org.firstinspires.ftc.teamcode.subsystems.robot;
 
@@ -58,6 +60,8 @@ public class fullTeleBlue extends NextFTCOpMode {
     private boolean tractionEnabled = false;
 
 
+    private final Pose goalPose = blueGoalPose;
+
     @Override
     public void onInit(){
         BindingManager.reset();
@@ -94,27 +98,31 @@ public class fullTeleBlue extends NextFTCOpMode {
         Gamepads.gamepad2().x().toggleOnBecomesTrue().whenBecomesTrue(kicker.INSTANCE.kickerUp).whenBecomesFalse(kicker.INSTANCE.kickerDown);
 
         //sorting commands
-        Gamepads.gamepad2().rightBumper().whenBecomesTrue(() -> spindexer.nextSlot());
+        Gamepads.gamepad2().rightBumper().whenBecomesTrue(() -> posSpindexer.INSTANCE.nextSlot().schedule());
         Gamepads.gamepad2().b().whenBecomesTrue(() -> robot.INSTANCE.sort(limelight.obeliskId));
 
 
         //flywheel
-        Gamepads.gamepad2().dpadLeft().toggleOnBecomesTrue().whenBecomesTrue(flywheel.INSTANCE.spinAtSpeed(1400)).whenBecomesFalse(flywheel.INSTANCE.stop);
-        Gamepads.gamepad2().dpadRight().toggleOnBecomesTrue().whenBecomesTrue(flywheel.INSTANCE.spinAtSpeed(1100)).whenBecomesFalse(flywheel.INSTANCE.stop);
+        Gamepads.gamepad2().dpadLeft().toggleOnBecomesTrue().whenBecomesTrue(() -> flywheel.spinAtSpeed(1400)).whenBecomesFalse(flywheel.INSTANCE.stop);
+        Gamepads.gamepad2().dpadRight().toggleOnBecomesTrue().whenBecomesTrue(() -> flywheel.spinAtSpeed(1100)).whenBecomesFalse(flywheel.INSTANCE.stop);
 
     }
 
 
-    KineticState goal;
+    KineticState headingLockGoal;
     @Override
     public void onUpdate() {
-        goal = new KineticState(Math.atan2(blueGoalPose.getY() - follower().getPose().getY() , blueGoalPose.getX() - follower().getPose().getX()));
-        headingLockControl.setGoal(goal);
-        telemetry.addData("heading lock: ", headingLockEnabled);
-        telemetry.addData("robot pose: ", follower().getPose());
-        telemetry.addData("goal:", goal.component1());
-        telemetry.update();
         robotPose = follower().getPose();
+        goalDist = robotPose.distanceFrom(goalPose);
+
+        headingLockGoal = new KineticState(Math.atan2(blueGoalPose.getY() - robotPose.getY() , blueGoalPose.getX() - robotPose.getX()));
+        headingLockControl.setGoal(headingLockGoal);
+        telemetry.addData("heading lock: ", headingLockEnabled);
+        telemetry.addData("robot pose: ", robotPose);
+        telemetry.addData("goal distance:", goalDist);
+        telemetry.update();
+
+
 
     }
 
@@ -122,7 +130,6 @@ public class fullTeleBlue extends NextFTCOpMode {
     public void onStop(){
         intake.INSTANCE.stop.schedule();
         flywheel.INSTANCE.stop.schedule();
-        robot.INSTANCE.prepCarouselToMove().schedule();
         BindingManager.reset();
 
     }

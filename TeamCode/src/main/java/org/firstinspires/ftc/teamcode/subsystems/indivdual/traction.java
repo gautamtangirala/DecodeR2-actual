@@ -20,9 +20,9 @@ public class traction implements Subsystem {
     private double rightTractionDown = 0.64;
     private double rightTractionTip = 0.71;
 
-    private double leftTractionUp = 0.96;
-    private double leftTractionDown = 1;
-    private double leftTractionTip = 1;
+    private double leftTractionUp = 0.68;
+    private double leftTractionDown = 0.72;
+    private double leftTractionTip = 0.79;
 
     public final Command deploy = new SetPositions(rightTractionWheel.to(rightTractionDown), leftTractionWheel.to(leftTractionDown)).requires(this);
 

@@ -4,6 +4,7 @@ package org.firstinspires.ftc.teamcode.opmode.auto.redAuto;
 import static com.pedropathing.paths.HeadingInterpolator.lazy;
 import static com.pedropathing.paths.HeadingInterpolator.linear;
 import static org.firstinspires.ftc.teamcode.fieldConstants.blueFarScorePose;
+import static org.firstinspires.ftc.teamcode.fieldConstants.redFarScorePose;
 import static org.firstinspires.ftc.teamcode.fieldConstants.robotPose;
 import static dev.nextftc.extensions.pedro.PedroComponent.follower;
 
@@ -40,26 +41,26 @@ public class redFar extends NextFTCOpMode {
     }
 
 
-    private final Pose startPose = new Pose(56, 8, Math.toRadians(90));
-    private final Pose scanObeliskPose = new Pose(60,100,Math.toRadians(70));
-    private final Pose scorePose = blueFarScorePose;
+    private final Pose startPose = new Pose(56, 8, Math.toRadians(90)).mirror();
+    private final Pose scanObeliskPose = new Pose(60,100,Math.toRadians(70)).mirror();
+    private final Pose scorePose = redFarScorePose;
 
     private final double prepPickupBallsX = 44;
-    private final Pose prepPickup1Pose = new Pose(prepPickupBallsX, 84, Math.toRadians(180));
-    private final Pose prepPickup2Pose = new Pose(prepPickupBallsX, 56, Math.toRadians(180));
-    private final Pose prepPickup3Pose = new Pose(prepPickupBallsX, 32, Math.toRadians(180));
+    private final Pose prepPickup1Pose = new Pose(prepPickupBallsX, 84, Math.toRadians(180)).mirror();
+    private final Pose prepPickup2Pose = new Pose(prepPickupBallsX, 56, Math.toRadians(180)).mirror();
+    private final Pose prepPickup3Pose = new Pose(prepPickupBallsX, 32, Math.toRadians(180)).mirror();
     private final double pickupBallsX = prepPickupBallsX-35;
-    private final Pose pickup1Pose = new Pose(pickupBallsX, prepPickup1Pose.getY(), Math.toRadians(180));
-    private final Pose pickup2Pose = new Pose(pickupBallsX, prepPickup2Pose.getY(), Math.toRadians(180));
-    private final Pose pickup3Pose = new Pose(pickupBallsX, prepPickup3Pose.getY(), Math.toRadians(180));
+    private final Pose pickup1Pose = new Pose(pickupBallsX, prepPickup1Pose.getY(), Math.toRadians(180)).mirror();
+    private final Pose pickup2Pose = new Pose(pickupBallsX, prepPickup2Pose.getY(), Math.toRadians(180)).mirror();
+    private final Pose pickup3Pose = new Pose(pickupBallsX, prepPickup3Pose.getY(), Math.toRadians(180)).mirror();
 
-    private final Pose pickup1ControlPoint = new Pose(scorePose.getX(), pickup1Pose.getY());
-    private final Pose pickup2ControlPoint = new Pose(scorePose.getX(), pickup2Pose.getY());
-    private final Pose pickup3ControPoint = new Pose(scorePose.getX(), pickup3Pose.getY());
+    private final Pose pickup1ControlPoint = new Pose(scorePose.getX(), pickup1Pose.getY()).mirror();
+    private final Pose pickup2ControlPoint = new Pose(scorePose.getX(), pickup2Pose.getY()).mirror();
+    private final Pose pickup3ControPoint = new Pose(scorePose.getX(), pickup3Pose.getY()).mirror();
 
-    private final Pose pushGatePose = new Pose(14,63, Math.toRadians(180));
+    private final Pose pushGatePose = new Pose(14,63, Math.toRadians(180)).mirror();
 
-    private final Pose leavePose = new Pose(30, 18, Math.toRadians(180));
+    private final Pose leavePose = new Pose(30, 18, Math.toRadians(180)).mirror();
 
     public PathChain scoreLine, pushGate, leave, spikeMark1Pickup, spikeMark2Pickup, spikeMark3Pickup, spikeMark1ScoreCurve, spikeMark2ScoreCurve, spikeMark3ScoreCurve;
 

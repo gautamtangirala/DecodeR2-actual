@@ -3,7 +3,9 @@ package org.firstinspires.ftc.teamcode.opmode.auto.blueAuto;
 
 import static com.pedropathing.paths.HeadingInterpolator.lazy;
 import static com.pedropathing.paths.HeadingInterpolator.linear;
-import static org.firstinspires.ftc.teamcode.fieldConstants.blueFarScorePose;
+import static org.firstinspires.ftc.teamcode.fieldConstants.blueCloseScorePose;
+import static org.firstinspires.ftc.teamcode.fieldConstants.blueGoalPose;
+import static org.firstinspires.ftc.teamcode.fieldConstants.goalDist;
 import static org.firstinspires.ftc.teamcode.fieldConstants.robotPose;
 
 import com.pedropathing.geometry.BezierCurve;
@@ -31,7 +33,7 @@ import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
 
-@Autonomous(name = "close Blue",  preselectTeleOp = "Blue Side Teleop", group = "Blue")
+@Autonomous(name = "Close Blue",  preselectTeleOp = "Blue Side Teleop", group = "Blue")
 public class blueClose extends NextFTCOpMode {
     public blueClose() {
         addComponents(
@@ -44,11 +46,12 @@ public class blueClose extends NextFTCOpMode {
 
     private final Pose startPose = new Pose(30, 128, Math.toRadians(180));
     private final Pose scanObeliskPose = new Pose(60,100,Math.toRadians(70));
-    private final Pose scorePose = blueFarScorePose;
+    private final Pose goalPose = blueGoalPose;
+    private final Pose scorePose = blueCloseScorePose;
 
     private final double prepPickupBallsX = 44;
     private final Pose prepPickup1Pose = new Pose(prepPickupBallsX, 84, Math.toRadians(180));
-    private final Pose prepPickup2Pose = new Pose(prepPickupBallsX, 56, Math.toRadians(180));
+    private final Pose prepPickup2Pose = new Pose(prepPickupBallsX, 58, Math.toRadians(180));
     private final Pose prepPickup3Pose = new Pose(prepPickupBallsX, 32, Math.toRadians(180));
     private final double pickupBallsX = prepPickupBallsX-35;
     private final Pose pickup1Pose = new Pose(18, prepPickup1Pose.getY(), Math.toRadians(180));
@@ -57,13 +60,13 @@ public class blueClose extends NextFTCOpMode {
 
     private final Pose pickup1ControlPoint = new Pose(scorePose.getX(), pickup1Pose.getY());
     private final Pose pickup2ControlPoint = new Pose(scorePose.getX(), pickup2Pose.getY());
-    private final Pose pickup3ControPoint = new Pose(scorePose.getX(), pickup3Pose.getY());
+    private final Pose pickup3ControlPoint = new Pose(scorePose.getX(), pickup3Pose.getY());
 
-    private final Pose pushGatePose = new Pose(14,63, Math.toRadians(180));
+    private final Pose pushGatePose = new Pose(12,60, Math.toRadians(155));
 
-    private final Pose leavePose = new Pose(24, 84, Math.toRadians(180));
+    private final Pose leavePose = new Pose(30, 63, Math.toRadians(180));
 
-    public PathChain scoreLine, pushGate, leave, spikeMark1Pickup, spikeMark2Pickup, spikeMark3Pickup, spikeMark1ScoreCurve, spikeMark2ScoreCurve, spikeMark3ScoreCurve;
+    public PathChain scoreLine, pushGate, pushGateScoreCurve, leave, spikeMark1Pickup, spikeMark2Pickup, spikeMark3Pickup, spikeMark1ScoreCurve, spikeMark2ScoreCurve, spikeMark3ScoreCurve;
 
 
 
@@ -76,8 +79,16 @@ public class blueClose extends NextFTCOpMode {
 
         pushGate = follower().pathBuilder()
                 .addPath(new BezierLine(() -> follower().getPose(), pushGatePose))
-                .setHeadingInterpolation(lazy(() -> linear(follower().getHeading(), scorePose.getHeading(), 0.8)))
+                .setHeadingInterpolation(lazy(() -> linear(follower().getHeading(), pushGatePose.getHeading(), 0.5)))
                 .build();
+
+        pushGateScoreCurve = follower().pathBuilder()
+                .addPath(new BezierLine(pushGatePose, prepPickup2Pose))
+                .setTangentHeadingInterpolation()
+                .addPath(new BezierLine(prepPickup2Pose, scorePose))
+                .setHeadingInterpolation(lazy(() -> linear(follower().getHeading(), scorePose.getHeading())))
+                .build();
+
 
         leave = follower().pathBuilder()
                 .addPath(new BezierLine(() -> follower().getPose(), leavePose))
@@ -102,7 +113,7 @@ public class blueClose extends NextFTCOpMode {
                 .build();
 
         spikeMark3ScoreCurve = follower().pathBuilder()
-                .addPath(new BezierCurve(pickup3Pose, pickup3ControPoint, scorePose))
+                .addPath(new BezierCurve(pickup3Pose, pickup3ControlPoint, scorePose))
                 .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading(), 0.8)
                 .build();
 
@@ -129,31 +140,48 @@ public class blueClose extends NextFTCOpMode {
         limelight.startLimelight();
         limelight.obeliskId = 0;
         follower().setStartingPose(startPose);
+
+        robotPose = follower().getPose();
+        goalDist = robotPose.distanceFrom(goalPose);
     }
-
-
-    @Override public void onWaitForStart() {
-    }
-
 
     private Command auto(){
         return new SequentialGroup(
+                //preloads
                 new ParallelGroup(new FollowPath(scoreLine), flywheel.INSTANCE.startClose),
                 robot.INSTANCE.shootAll(),
-                new ParallelDeadlineGroup(new FollowPath(spikeMark1Pickup), robot.INSTANCE.startIntaking, flywheel.INSTANCE.stop),
-                new Delay(0.5),
-                new ParallelGroup(new FollowPath(spikeMark1ScoreCurve), flywheel.INSTANCE.startClose),
-                robot.INSTANCE.stopIntaking,
-                robot.INSTANCE.shootAll(),
+
+                //pickup middle spike
                 new ParallelDeadlineGroup(new FollowPath(spikeMark2Pickup), robot.INSTANCE.startIntaking, flywheel.INSTANCE.stop),
-                new Delay(0.5),
                 new ParallelGroup(new FollowPath(spikeMark2ScoreCurve), flywheel.INSTANCE.startClose),
-                robot.INSTANCE.stopIntaking,
                 robot.INSTANCE.shootAll(),
+
+                //Gate intake
+//                new ParallelDeadlineGroup(new FollowPath(pushGate), robot.INSTANCE.startIntaking, flywheel.INSTANCE.stop),
+//                new ParallelDeadlineGroup(new Delay(2), robot.INSTANCE.startIntaking),
+//                new ParallelDeadlineGroup(new FollowPath(pushGateScoreCurve), flywheel.INSTANCE.startClose),
+//                robot.INSTANCE.shootAll(),
+
+                //pickup first spike
+                new ParallelDeadlineGroup(new FollowPath(spikeMark1Pickup), robot.INSTANCE.startIntaking, flywheel.INSTANCE.stop),
+                new ParallelGroup(new FollowPath(spikeMark1ScoreCurve), flywheel.INSTANCE.startClose),
+                robot.INSTANCE.shootAll(),
+
+                //leave
                 new ParallelGroup(new FollowPath(leave), flywheel.INSTANCE.stop)
         );
     }
 
+    private Command pathing(){
+
+        return new SequentialGroup(
+        new FollowPath(scoreLine),
+        new FollowPath(spikeMark2Pickup),
+        new FollowPath(spikeMark2ScoreCurve),
+        new FollowPath(spikeMark1Pickup),
+        new FollowPath(spikeMark1ScoreCurve),
+        new FollowPath(leave));
+    }
     @Override public void onStartButtonPressed() {
         auto().schedule();
     }
@@ -163,8 +191,11 @@ public class blueClose extends NextFTCOpMode {
             limelight.scanObelisk();
         }
         robotPose = follower().getPose();
+        goalDist = robotPose.distanceFrom(goalPose);
+
+        telemetry.addLine("Opmode Info");
         telemetry.addData("obelisk ID", limelight.obeliskId);
-        telemetry.addData("current pose", robotPose);
+
         telemetry.update();
     }
     @Override public void onStop() {

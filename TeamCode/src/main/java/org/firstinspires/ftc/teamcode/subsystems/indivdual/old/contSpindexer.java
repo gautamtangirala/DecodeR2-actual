@@ -1,34 +1,25 @@
-package org.firstinspires.ftc.teamcode.subsystems.indivdual;
+package org.firstinspires.ftc.teamcode.subsystems.indivdual.old;
 
 
-import static org.firstinspires.ftc.teamcode.opmode.tuners.carouselTuner.spindexerD;
-import static org.firstinspires.ftc.teamcode.opmode.tuners.carouselTuner.spindexerP;
-import static org.firstinspires.ftc.teamcode.opmode.tuners.carouselTuner.target;
 import static org.firstinspires.ftc.teamcode.subsystems.indivdual.sensors.carouselSlots;
 
-import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.subsystems.indivdual.AxonEncoder.AbsoluteAnalogEncoder;
 import org.firstinspires.ftc.teamcode.subsystems.indivdual.AxonEncoder.Angle;
-
-import java.util.ResourceBundle;
+import org.firstinspires.ftc.teamcode.subsystems.indivdual.sensors;
 
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.control.KineticState;
-import dev.nextftc.core.commands.Command;
-import dev.nextftc.core.commands.utility.InstantCommand;
 import dev.nextftc.core.subsystems.Subsystem;
 import dev.nextftc.ftc.ActiveOpMode;
 import dev.nextftc.hardware.impl.CRServoEx;
-import dev.nextftc.hardware.impl.FeedbackCRServoEx;
 
 
-public class spindexer implements Subsystem {
-    public static final spindexer INSTANCE = new spindexer();
-    private spindexer() {}
+public class contSpindexer implements Subsystem {
+    public static final contSpindexer INSTANCE = new contSpindexer();
+    private contSpindexer() {}
     private AnalogInput spindexerAnalog;
     private CRServoEx rightSpindexerServo = new CRServoEx("rightSpindexerServo");
     private CRServoEx leftSpindexerServo = new CRServoEx("leftSpindexerServo");
@@ -38,7 +29,7 @@ public class spindexer implements Subsystem {
     public static double continuousAngle = 0;
     public static double targetAngle = 0;
 
-    private ControlSystem spindexerControl = ControlSystem.builder().posPid(spindexerP,0,spindexerD).build();
+    private ControlSystem spindexerControl = ControlSystem.builder().posPid(0.035,0,0).build();
 
 
     //Servo angles needed
@@ -78,7 +69,7 @@ public class spindexer implements Subsystem {
     }
 
     public static boolean spindexerAtTarget(){
-        return Math.abs(spindexer.targetAngle - spindexer.continuousAngle) < Math.toRadians(10);
+        return Math.abs(contSpindexer.targetAngle - contSpindexer.continuousAngle) < Math.toRadians(10);
     }
 
 

@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.subsystems.indivdual.flywheel;
 import org.firstinspires.ftc.teamcode.subsystems.indivdual.intake;
 import org.firstinspires.ftc.teamcode.subsystems.indivdual.kicker;
 import org.firstinspires.ftc.teamcode.subsystems.indivdual.limelight;
-import org.firstinspires.ftc.teamcode.subsystems.indivdual.spindexer;
+import org.firstinspires.ftc.teamcode.subsystems.indivdual.old.contSpindexer;
 import org.firstinspires.ftc.teamcode.subsystems.indivdual.traction;
 import org.firstinspires.ftc.teamcode.subsystems.robot;
 
@@ -94,13 +94,13 @@ public class fullTeleRed extends NextFTCOpMode {
         Gamepads.gamepad2().x().toggleOnBecomesTrue().whenBecomesTrue(kicker.INSTANCE.kickerUp).whenBecomesFalse(kicker.INSTANCE.kickerDown);
 
         //sorting commands
-        Gamepads.gamepad2().rightBumper().whenBecomesTrue(() -> spindexer.nextSlot());
+        Gamepads.gamepad2().rightBumper().whenBecomesTrue(() -> contSpindexer.nextSlot());
         Gamepads.gamepad2().b().whenBecomesTrue(() -> robot.INSTANCE.sort(limelight.obeliskId));
 
 
         //flywheel
-        Gamepads.gamepad2().dpadLeft().toggleOnBecomesTrue().whenBecomesTrue(flywheel.INSTANCE.spinAtSpeed(1400)).whenBecomesFalse(flywheel.INSTANCE.stop);
-        Gamepads.gamepad2().dpadRight().toggleOnBecomesTrue().whenBecomesTrue(flywheel.INSTANCE.spinAtSpeed(1100)).whenBecomesFalse(flywheel.INSTANCE.stop);
+        Gamepads.gamepad2().dpadLeft().toggleOnBecomesTrue().whenBecomesTrue(() -> flywheel.spinAtSpeed(1400)).whenBecomesFalse(flywheel.INSTANCE.stop);
+        Gamepads.gamepad2().dpadRight().toggleOnBecomesTrue().whenBecomesTrue(() -> flywheel.spinAtSpeed(1100)).whenBecomesFalse(flywheel.INSTANCE.stop);
 
     }
 
@@ -122,7 +122,6 @@ public class fullTeleRed extends NextFTCOpMode {
     public void onStop(){
         intake.INSTANCE.stop.schedule();
         flywheel.INSTANCE.stop.schedule();
-        robot.INSTANCE.prepCarouselToMove().schedule();
         BindingManager.reset();
 
     }
